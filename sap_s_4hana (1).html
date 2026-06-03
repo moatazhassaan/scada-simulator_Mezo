@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام SAP S/4HANA - إدارة إنتاج الأسمنت (مجمع مصانع العريش)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f1f5f9; /* Slate 100 for a soft, comfortable background */
+        }
+        .font-english {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Premium SAP/Industrial Theme Colors */
+        .header-gradient {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        }
+        .sap-card { 
+            background-color: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 12px;
+        }
+        
+        /* Input Styling with smooth transitions */
+        .sap-input { 
+            border: 1px solid #cbd5e1; 
+            background-color: #f8fafc;
+            transition: all 0.2s ease-in-out; 
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+        }
+        .sap-input:focus { 
+            border-color: #2563eb; 
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            outline: none; 
+        }
+        .sap-input[readonly] {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            color: #475569;
+            font-weight: 600;
+        }
+        
+        /* Specialized Fields Styling */
+        .kpi-input {
+            background-color: #eff6ff; /* Soft blue */
+            border-color: #bfdbfe;
+            color: #1e3a8a;
+            font-weight: bold;
+        }
+        
+        /* Button Styling */
+        .btn-primary {
+            background: linear-gradient(to right, #1d4ed8, #2563eb);
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Tabs styling */
+        .nav-tab { transition: all 0.3s; }
+        .nav-tab.active {
+            background-color: #ffffff;
+            color: #1e40af;
+            border-top-width: 3px;
+            border-top-color: #2563eb;
+            font-weight: 700;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <header class="header-gradient text-white py-6 shadow-lg relative border-b-4 border-blue-600">
+        <!-- زوايا الديكور العلوية -->
+        <div class="absolute top-4 right-6 hidden md:flex items-center gap-3">
+            <div class="text-right">
+                <span class="block text-sm font-semibold text-gray-200">Moataz Hassaan (RPA)</span>
+                <span class="block text-xs text-green-400 flex items-center justify-end gap-1">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> متصل بالنظام
+                </span>
+            </div>
+            <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center border-2 border-slate-500">
+                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+        </div>
+
+        <div class="absolute top-4 left-6 hidden md:block">
+            <svg class="h-10 w-20" viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 10 H90 V40 H10 Z" fill="#2563eb" opacity="0.9" />
+                <text x="50" y="32" fill="white" font-family="Arial" font-weight="bold" font-size="20" text-anchor="middle">SAP</text>
+            </svg>
+        </div>
+
+        <!-- النصوص المركزية الجديدة -->
+        <div class="container mx-auto text-center px-4 mt-2">
+            <h1 class="text-2xl md:text-3xl font-extrabold mb-3 tracking-wide drop-shadow-md">
+                🏭 نظام إدارة إنتاج الأسمنت مجمع مصانع أسمنت العريش
+            </h1>
+            <h2 class="text-lg md:text-xl font-english font-semibold text-blue-200 mb-2 tracking-wider">
+                Cement Production Management System _ El_Arish Cement
+            </h2>
+            <div class="inline-block bg-white/10 backdrop-blur-sm px-6 py-1.5 rounded-full border border-white/20 mt-2">
+                <p class="text-sm md:text-base font-english text-gray-100 font-medium tracking-wide">
+                    Developed by: Developer RPA _ Moataz Hassaan
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-slate-200/80 backdrop-blur-md px-4 sm:px-6 pt-3 flex gap-1 overflow-x-auto border-b border-slate-300 shadow-sm sticky top-0 z-10">
+        <button onclick="showTab('limestone')" id="tab_limestone" class="nav-tab active px-5 py-3 text-sm rounded-t-lg hover:bg-slate-50 text-slate-600 whitespace-nowrap">
+            ⛏ كسارة الحجر الجيري
+        </button>
+        <button onclick="showTab('clay')" id="tab_clay" class="nav-tab px-5 py-3 text-sm font-semibold rounded-t-lg hover:bg-slate-50 text-slate-600 whitespace-nowrap">
+            ⛏ كسارة الطفلة
+        </button>
+        <button onclick="showTab('rawmill')" id="tab_rawmill" class="nav-tab px-5 py-3 text-sm font-semibold rounded-t-lg hover:bg-slate-50 text-slate-600 whitespace-nowrap">
+            ⚙ طاحونة الخام
+        </button>
+        <button onclick="showTab('kiln')" id="tab_kiln" class="nav-tab px-5 py-3 text-sm font-semibold rounded-t-lg hover:bg-slate-50 text-slate-600 whitespace-nowrap">
+            🔥 قسم الفرن
+        </button>
+        <button onclick="showTab('cementmill')" id="tab_cementmill" class="nav-tab px-5 py-3 text-sm font-semibold rounded-t-lg hover:bg-slate-50 text-slate-600 whitespace-nowrap">
+            ⚙ طواحين الأسمنت
+        </button>
+        <button onclick="showTab('packing')" id="tab_packing" class="nav-tab px-5 py-3 text-sm font-semibold rounded-t-lg hover:bg-slate-50 text-slate-600 whitespace-nowrap">
+            📦 قسم التعبئة
+        </button>
+    </div>
+
+    <main class="flex-grow p-4 md:p-8">
+        
+        <div class="max-w-6xl mx-auto sap-card p-6 md:p-8">
+            <h2 id="currentSectionHeader" class="text-2xl font-bold text-slate-800 border-b-2 border-slate-100 pb-4 mb-6 flex items-center gap-3">
+                <!-- سيتم تعبئة العنوان ديناميكياً -->
+            </h2>
+
+            <!-- 1. نموذج الكسارة (Limestone) -->
+            <form id="formLimestone" onsubmit="handleSapSubmit(event, 'ls', '⛏ كسارة الحجر الجيري')" class="sap-form-panel grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- الحقول الأساسية -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">كود المعدة</label>
+                    <input type="text" id="ls_equipmentCode" class="sap-input w-full p-2.5 text-sm rounded-lg font-english" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">الوردية</label>
+                    <select id="ls_shift" class="sap-input w-full p-2.5 text-sm rounded-lg font-semibold text-slate-700">
+                        <option>الوردية الأولى</option>
+                        <option>الوردية الثانية</option>
+                        <option>الوردية الثالثة</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي الإنتاج (طن)</label>
+                    <input type="number" step="any" id="ls_totalProduction" class="sap-input w-full p-2.5 text-sm rounded-lg" required>
+                </div>
+
+                <!-- حقول التشغيل والتوقف -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">ساعات التشغيل الفعلي</label>
+                    <input type="number" step="any" id="ls_operatingHours" class="sap-input w-full p-2.5 text-sm rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">عدد التوقفات</label>
+                    <input type="number" id="ls_stopCount" class="sap-input w-full p-2.5 text-sm rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي التوقف (دقيقة)</label>
+                    <input type="number" id="ls_totalDowntime" class="sap-input w-full p-2.5 text-sm rounded-lg text-red-600 font-semibold">
+                </div>
+
+                <!-- حقول المؤشرات KPI -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">معدل الإتاحة (Availability %)</label>
+                    <input type="text" id="ls_availability" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">نسبة الإنجاز (Achievement %)</label>
+                    <input type="text" id="ls_achievement" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">الفاعلية الكلية (OEE %)</label>
+                    <input type="text" id="ls_oee" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english text-lg" placeholder="0%">
+                </div>
+
+                <!-- حقول الأفراد -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">الفني المسؤول</label>
+                    <input type="text" id="ls_technician" class="sap-input w-full p-2.5 text-sm rounded-lg">
+                </div>
+                <div class="md:col-span-1 lg:col-span-2">
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">المهندس المشغل</label>
+                    <input type="text" id="ls_engineer" class="sap-input w-full p-2.5 text-sm rounded-lg">
+                </div>
+
+                <!-- الملاحظات وزر الحفظ -->
+                <div class="md:col-span-2 lg:col-span-3 mt-2">
+                    <label class="block text-sm font-bold text-slate-700 mb-1.5">ملاحظات التشغيل (Log Notes)</label>
+                    <textarea id="ls_notes" rows="2" class="sap-input w-full p-3 text-sm rounded-lg"></textarea>
+                </div>
+                <div class="md:col-span-2 lg:col-span-3 flex justify-end mt-4 pt-4 border-t border-slate-100">
+                    <button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg text-sm font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        تسجيل البيانات في S/4HANA
+                    </button>
+                </div>
+            </form>
+
+            <!-- 2. نموذج كسارة الطفلة (Clay) -->
+            <form id="formClay" onsubmit="handleSapSubmit(event, 'cl', '⛏ كسارة الطفلة')" class="sap-form-panel hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">كود المعدة</label><input type="text" id="cl_equipmentCode" class="sap-input w-full p-2.5 text-sm rounded-lg font-english" readonly></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الوردية</label><select id="cl_shift" class="sap-input w-full p-2.5 text-sm rounded-lg font-semibold text-slate-700"><option>الوردية الأولى</option><option>الوردية الثانية</option><option>الوردية الثالثة</option></select></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي الإنتاج (طن)</label><input type="number" step="any" id="cl_totalProduction" class="sap-input w-full p-2.5 text-sm rounded-lg" required></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">ساعات التشغيل الفعلي</label><input type="number" step="any" id="cl_operatingHours" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">عدد التوقفات</label><input type="number" id="cl_stopCount" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي التوقف (دقيقة)</label><input type="number" id="cl_totalDowntime" class="sap-input w-full p-2.5 text-sm rounded-lg text-red-600 font-semibold"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">معدل الإتاحة (Availability %)</label><input type="text" id="cl_availability" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">نسبة الإنجاز (Achievement %)</label><input type="text" id="cl_achievement" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفاعلية الكلية (OEE %)</label><input type="text" id="cl_oee" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english text-lg" placeholder="0%"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفني المسؤول</label><input type="text" id="cl_technician" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div class="md:col-span-1 lg:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">المهندس المشغل</label><input type="text" id="cl_engineer" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                
+                <div class="md:col-span-2 lg:col-span-3 mt-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">ملاحظات التشغيل (Log Notes)</label><textarea id="cl_notes" rows="2" class="sap-input w-full p-3 text-sm rounded-lg"></textarea></div>
+                <div class="md:col-span-2 lg:col-span-3 flex justify-end mt-4 pt-4 border-t border-slate-100"><button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg text-sm font-bold flex items-center gap-2">💾 تسجيل البيانات في S/4HANA</button></div>
+            </form>
+
+            <!-- 3. نموذج طاحونة الخام (Rawmill) -->
+            <form id="formRawmill" onsubmit="handleSapSubmit(event, 'rm', '⚙ طاحونة الخام')" class="sap-form-panel hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">كود المعدة</label><input type="text" id="rm_equipmentCode" class="sap-input w-full p-2.5 text-sm rounded-lg font-english" readonly></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الوردية</label><select id="rm_shift" class="sap-input w-full p-2.5 text-sm rounded-lg font-semibold text-slate-700"><option>الوردية الأولى</option><option>الوردية الثانية</option><option>الوردية الثالثة</option></select></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي الإنتاج (طن)</label><input type="number" step="any" id="rm_totalProduction" class="sap-input w-full p-2.5 text-sm rounded-lg" required></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">ساعات التشغيل الفعلي</label><input type="number" step="any" id="rm_operatingHours" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">عدد التوقفات</label><input type="number" id="rm_stopCount" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي التوقف (دقيقة)</label><input type="number" id="rm_totalDowntime" class="sap-input w-full p-2.5 text-sm rounded-lg text-red-600 font-semibold"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">معدل الإتاحة (Availability %)</label><input type="text" id="rm_availability" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">نسبة الإنجاز (Achievement %)</label><input type="text" id="rm_achievement" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفاعلية الكلية (OEE %)</label><input type="text" id="rm_oee" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english text-lg" placeholder="0%"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفني المسؤول</label><input type="text" id="rm_technician" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div class="md:col-span-1 lg:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">المهندس المشغل</label><input type="text" id="rm_engineer" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                
+                <div class="md:col-span-2 lg:col-span-3 mt-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">ملاحظات التشغيل (Log Notes)</label><textarea id="rm_notes" rows="2" class="sap-input w-full p-3 text-sm rounded-lg"></textarea></div>
+                <div class="md:col-span-2 lg:col-span-3 flex justify-end mt-4 pt-4 border-t border-slate-100"><button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg text-sm font-bold flex items-center gap-2">💾 تسجيل البيانات في S/4HANA</button></div>
+            </form>
+
+            <!-- 4. نموذج قسم الفرن (Kiln) -->
+            <form id="formKiln" onsubmit="handleSapSubmit(event, 'kl', '🔥 قسم الفرن')" class="sap-form-panel hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">كود المعدة</label><input type="text" id="kl_equipmentCode" class="sap-input w-full p-2.5 text-sm rounded-lg font-english" readonly></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الوردية</label><select id="kl_shift" class="sap-input w-full p-2.5 text-sm rounded-lg font-semibold text-slate-700"><option>الوردية الأولى</option><option>الوردية الثانية</option><option>الوردية الثالثة</option></select></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي الإنتاج (طن)</label><input type="number" step="any" id="kl_totalProduction" class="sap-input w-full p-2.5 text-sm rounded-lg" required></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">ساعات التشغيل الفعلي</label><input type="number" step="any" id="kl_operatingHours" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">عدد التوقفات</label><input type="number" id="kl_stopCount" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي التوقف (دقيقة)</label><input type="number" id="kl_totalDowntime" class="sap-input w-full p-2.5 text-sm rounded-lg text-red-600 font-semibold"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">معدل الإتاحة (Availability %)</label><input type="text" id="kl_availability" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">نسبة الإنجاز (Achievement %)</label><input type="text" id="kl_achievement" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفاعلية الكلية (OEE %)</label><input type="text" id="kl_oee" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english text-lg" placeholder="0%"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفني المسؤول</label><input type="text" id="kl_technician" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div class="md:col-span-1 lg:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">المهندس المشغل</label><input type="text" id="kl_engineer" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                
+                <div class="md:col-span-2 lg:col-span-3 mt-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">ملاحظات التشغيل (Log Notes)</label><textarea id="kl_notes" rows="2" class="sap-input w-full p-3 text-sm rounded-lg"></textarea></div>
+                <div class="md:col-span-2 lg:col-span-3 flex justify-end mt-4 pt-4 border-t border-slate-100"><button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg text-sm font-bold flex items-center gap-2">💾 تسجيل البيانات في S/4HANA</button></div>
+            </form>
+
+            <!-- 5. نموذج طواحين الأسمنت (Cementmill) -->
+            <form id="formCementmill" onsubmit="handleSapSubmit(event, 'cm', '⚙ طواحين الأسمنت')" class="sap-form-panel hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">كود المعدة</label><input type="text" id="cm_equipmentCode" class="sap-input w-full p-2.5 text-sm rounded-lg font-english" readonly></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الوردية</label><select id="cm_shift" class="sap-input w-full p-2.5 text-sm rounded-lg font-semibold text-slate-700"><option>الوردية الأولى</option><option>الوردية الثانية</option><option>الوردية الثالثة</option></select></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي الإنتاج (طن)</label><input type="number" step="any" id="cm_totalProduction" class="sap-input w-full p-2.5 text-sm rounded-lg" required></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">ساعات التشغيل الفعلي</label><input type="number" step="any" id="cm_operatingHours" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">عدد التوقفات</label><input type="number" id="cm_stopCount" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي التوقف (دقيقة)</label><input type="number" id="cm_totalDowntime" class="sap-input w-full p-2.5 text-sm rounded-lg text-red-600 font-semibold"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">معدل الإتاحة (Availability %)</label><input type="text" id="cm_availability" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">نسبة الإنجاز (Achievement %)</label><input type="text" id="cm_achievement" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفاعلية الكلية (OEE %)</label><input type="text" id="cm_oee" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english text-lg" placeholder="0%"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفني المسؤول</label><input type="text" id="cm_technician" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div class="md:col-span-1 lg:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">المهندس المشغل</label><input type="text" id="cm_engineer" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                
+                <div class="md:col-span-2 lg:col-span-3 mt-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">ملاحظات التشغيل (Log Notes)</label><textarea id="cm_notes" rows="2" class="sap-input w-full p-3 text-sm rounded-lg"></textarea></div>
+                <div class="md:col-span-2 lg:col-span-3 flex justify-end mt-4 pt-4 border-t border-slate-100"><button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg text-sm font-bold flex items-center gap-2">💾 تسجيل البيانات في S/4HANA</button></div>
+            </form>
+
+            <!-- 6. نموذج قسم التعبئة (Packing) -->
+            <form id="formPacking" onsubmit="handleSapSubmit(event, 'pk', '📦 قسم التعبئة')" class="sap-form-panel hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">كود المعدة</label><input type="text" id="pk_equipmentCode" class="sap-input w-full p-2.5 text-sm rounded-lg font-english" readonly></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الوردية</label><select id="pk_shift" class="sap-input w-full p-2.5 text-sm rounded-lg font-semibold text-slate-700"><option>الوردية الأولى</option><option>الوردية الثانية</option><option>الوردية الثالثة</option></select></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي الإنتاج (طن)</label><input type="number" step="any" id="pk_totalProduction" class="sap-input w-full p-2.5 text-sm rounded-lg" required></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">ساعات التشغيل الفعلي</label><input type="number" step="any" id="pk_operatingHours" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">عدد التوقفات</label><input type="number" id="pk_stopCount" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">إجمالي التوقف (دقيقة)</label><input type="number" id="pk_totalDowntime" class="sap-input w-full p-2.5 text-sm rounded-lg text-red-600 font-semibold"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">معدل الإتاحة (Availability %)</label><input type="text" id="pk_availability" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">نسبة الإنجاز (Achievement %)</label><input type="text" id="pk_achievement" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english" placeholder="0%"></div>
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفاعلية الكلية (OEE %)</label><input type="text" id="pk_oee" class="sap-input kpi-input w-full p-2.5 text-sm rounded-lg font-english text-lg" placeholder="0%"></div>
+                
+                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">الفني المسؤول</label><input type="text" id="pk_technician" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                <div class="md:col-span-1 lg:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">المهندس المشغل</label><input type="text" id="pk_engineer" class="sap-input w-full p-2.5 text-sm rounded-lg"></div>
+                
+                <div class="md:col-span-2 lg:col-span-3 mt-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">ملاحظات التشغيل (Log Notes)</label><textarea id="pk_notes" rows="2" class="sap-input w-full p-3 text-sm rounded-lg"></textarea></div>
+                <div class="md:col-span-2 lg:col-span-3 flex justify-end mt-4 pt-4 border-t border-slate-100"><button type="submit" class="btn-primary text-white px-8 py-3 rounded-lg text-sm font-bold flex items-center gap-2">💾 تسجيل البيانات في S/4HANA</button></div>
+            </form>
+
+        </div>
+
+        <!-- جدول لمتابعة وحفظ الوثائق المسجلة -->
+        <div class="max-w-6xl mx-auto sap-card p-6 md:p-8 mt-8">
+            <h3 class="text-xl font-bold text-slate-800 mb-5 border-b-2 border-slate-100 pb-3 flex items-center gap-2">
+                📂 وثائق الإنتاج المسجلة اليوم بالنظام (Document Logs)
+            </h3>
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <table class="w-full text-right text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                            <th class="p-4 font-bold">رقم الوثيقة / Doc No.</th>
+                            <th class="p-4 font-bold">القسم</th>
+                            <th class="p-4 font-bold">الوردية</th>
+                            <th class="p-4 font-bold">الإنتاج (طن)</th>
+                            <th class="p-4 font-bold">OEE %</th>
+                            <th class="p-4 font-bold">تاريخ ووقت المعالجة</th>
+                            <th class="p-4 font-bold">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sapLogBody" class="bg-white">
+                        <tr id="emptyRow" class="text-slate-500 border-b">
+                            <td colspan="7" class="p-6 text-center text-base">في إنتظار استقبال وتسجيل بيانات من الروبوت 🤖...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- النافذة المنبثقة الذكية (Custom Modal) -->
+    <div id="sapAlertModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full border-t-4 border-blue-600 overflow-hidden mx-4 transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <span class="font-bold text-slate-700 text-sm">تأكيد المعالجة - SAP S/4HANA</span>
+                <span class="text-xs text-slate-400 font-english">System Message</span>
+            </div>
+            <div class="p-6">
+                <div class="flex items-start gap-4">
+                    <div class="bg-green-100 text-green-600 p-3 rounded-full shadow-inner">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg">تم تسجيل البيانات بنجاح</h4>
+                        <p id="alertMessageText" class="text-sm text-slate-600 mt-2 font-english bg-slate-50 p-2 rounded border border-slate-100"></p>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button id="okBtn" onclick="closeSapModal()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-8 py-2.5 rounded-lg text-sm transition shadow-md">
+                        موافق (OK)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تذييل الصفحة الأنيق -->
+    <footer class="bg-gradient-to-r from-[#111827] to-[#1f2937] text-gray-300 py-8 text-center border-t-4 border-blue-600 mt-6 shadow-inner">
+        <div class="max-w-4xl mx-auto px-4 space-y-3">
+            <p class="font-semibold text-white md:text-lg">
+                مجمع مصانع العريش للأسمنت — نظام المحاكاة المتكامل | تم التصميم والتطوير بواسطة:
+            </p>
+            <p class="text-blue-400 font-bold text-xl font-english tracking-wide drop-shadow">
+                RPA Developer / Moataz Hassaan
+            </p>
+            
+            <div class="h-px bg-slate-700 my-5 w-3/4 md:w-1/2 mx-auto"></div>
+            
+            <p class="text-slate-400 text-sm md:text-base font-medium">
+                (فنى إنتاج \ المعتزباللة محمد حسان)
+            </p>
+            <p class="text-slate-400 text-sm md:text-base font-medium">
+                (فنى إنتاج و متخصص فى أتمتتة العمليات الريبوتية)
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // دالة التنقل والتبديل بين التبويبات
+        function showTab(tabId) {
+            document.querySelectorAll('.sap-form-panel').forEach(form => form.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active', 'bg-white', 'text-blue-800', 'border-t-3', 'border-blue-600', 'shadow-sm');
+                tab.classList.add('hover:bg-slate-50', 'text-slate-600');
+            });
+
+            const activeTabButton = document.getElementById('tab_' + tabId);
+            activeTabButton.classList.add('active');
+            activeTabButton.classList.remove('hover:bg-slate-50', 'text-slate-600');
+
+            let headerText = "";
+            switch(tabId) {
+                case 'limestone':
+                    document.getElementById('formLimestone').classList.remove('hidden');
+                    document.getElementById('ls_equipmentCode').value = "LS-302IM04";
+                    headerText = "⛏ كسارة الحجر الجيري — إدخال الإنتاج اليومي"; break;
+                case 'clay':
+                    document.getElementById('formClay').classList.remove('hidden');
+                    document.getElementById('cl_equipmentCode').value = "CL-303IM01";
+                    headerText = "⛏ كسارة الطفلة — إدخال الإنتاج اليومي"; break;
+                case 'rawmill':
+                    document.getElementById('formRawmill').classList.remove('hidden');
+                    document.getElementById('rm_equipmentCode').value = "RM-304RM01";
+                    headerText = "⚙ طاحونة الخام — إدخال الإنتاج اليومي"; break;
+                case 'kiln':
+                    document.getElementById('formKiln').classList.remove('hidden');
+                    document.getElementById('kl_equipmentCode').value = "KL-305KL01";
+                    headerText = "🔥 قسم الفرن — إدخال الإنتاج اليومي"; break;
+                case 'cementmill':
+                    document.getElementById('formCementmill').classList.remove('hidden');
+                    document.getElementById('cm_equipmentCode').value = "CM-306CM01/02";
+                    headerText = "⚙ طواحين الأسمنت — إدخال الإنتاج اليومي"; break;
+                case 'packing':
+                    document.getElementById('formPacking').classList.remove('hidden');
+                    document.getElementById('pk_equipmentCode').value = "PK-307PK01";
+                    headerText = "📦 قسم التعبئة — إدخال الإنتاج اليومي"; break;
+            }
+            document.getElementById('currentSectionHeader').innerText = headerText;
+        }
+
+        window.onload = function() {
+            showTab('limestone');
+        }
+
+        function handleSapSubmit(event, prefix, sectionName) {
+            event.preventDefault();
+
+            const shift = document.getElementById(prefix + '_shift').value;
+            const production = document.getElementById(prefix + '_totalProduction').value || 0;
+            const oee = document.getElementById(prefix + '_oee').value || "0%";
+
+            const docNum = "DOC-" + Math.floor(Math.random() * 9000000000 + 1000000000);
+
+            // تحريك النافذة المنبثقة
+            const modal = document.getElementById('sapAlertModal');
+            const modalContent = document.getElementById('modalContent');
+            document.getElementById('alertMessageText').innerText = `Document No: ${docNum}`;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+
+            const emptyRow = document.getElementById('emptyRow');
+            if (emptyRow) emptyRow.remove();
+
+            const tbody = document.getElementById('sapLogBody');
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB') + " " + now.toLocaleTimeString('en-US', { hour12: false });
+
+            const newRow = `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition font-medium">
+                    <td class="p-4 font-english text-blue-700 font-bold">${docNum}</td>
+                    <td class="p-4 text-slate-800">${sectionName}</td>
+                    <td class="p-4 text-slate-600">${shift}</td>
+                    <td class="p-4 font-english font-bold text-slate-700">${production}</td>
+                    <td class="p-4 font-english text-indigo-600 font-bold">${oee}</td>
+                    <td class="p-4 font-english text-slate-500 text-xs">${dateStr}</td>
+                    <td class="p-4"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">POSTED</span></td>
+                </tr>
+            `;
+            tbody.innerHTML = newRow + tbody.innerHTML;
+
+            // مسح الحقول بالكامل (الحقول الجديدة)
+            const fieldsToClear = [
+                '_totalProduction', '_operatingHours', '_stopCount', '_totalDowntime', 
+                '_availability', '_achievement', '_oee', '_technician', '_engineer', '_notes'
+            ];
+            
+            fieldsToClear.forEach(suffix => {
+                const element = document.getElementById(prefix + suffix);
+                if(element) element.value = '';
+            });
+        }
+
+        function closeSapModal() {
+            const modal = document.getElementById('sapAlertModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
