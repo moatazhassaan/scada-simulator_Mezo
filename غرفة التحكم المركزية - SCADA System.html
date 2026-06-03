@@ -1,0 +1,2633 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)file:///C:/Users/Laptop%20World/Documents/Downloads/scada%20(2).html -->
+<html lang="ar" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>غرفة التحكم المركزية - SCADA System</title>
+    <style>
+        /* SCADA Classic Industrial Theme (Siemens WinCC Style) */
+        body { 
+            background-color: #c0c0c0; /* الرمادي الصناعي */
+            color: #000; 
+            font-family: Arial, Helvetica, sans-serif; 
+            font-size: 12px; 
+            margin: 0; 
+            padding: 5px; 
+            display: flex;
+            flex-direction: column;
+            min-height: 98vh;
+        }
+
+        /* شريط الحالة الأخضر العلوي */
+        .top-status-bar { 
+            background-color: #00ff00; 
+            color: #000; 
+            padding: 5px 15px; 
+            font-weight: bold; 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid; 
+            border-color: #808080 #fff #fff #808080; 
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .center-status {
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .dev-signature-top {
+            color: #000080; 
+            font-size: 13px; 
+            font-weight: bold;
+            text-shadow: 1px 1px 0px #fff;
+            background: rgba(255,255,255,0.4);
+            padding: 2px 10px;
+            border-radius: 4px;
+            border: 1px solid #000080;
+        }
+
+        /* أزرار التنقل العلوية */
+        .nav-tabs { 
+            display: flex; 
+            gap: 4px; 
+            margin-bottom: 15px; 
+            flex-wrap: wrap; 
+            background-color: #a0a0a0;
+            padding: 4px;
+            border: 1px inset #fff;
+        }
+        .nav-tab { 
+            background-color: #c0c0c0; 
+            border: 2px solid; 
+            border-color: #fff #808080 #808080 #fff; 
+            padding: 8px 15px; 
+            font-weight: bold; 
+            font-size: 12px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #000;
+        }
+        .nav-tab:hover { background-color: #d0d0d0; }
+        .nav-tab.active { 
+            background-color: #00ffff; 
+            border-color: #808080 #fff #fff #808080; /* زر مضغوط */
+        }
+        
+        .tab-indicator {
+            width: 12px; height: 12px; background-color: #00ff00; border: 1px solid #000;
+        }
+
+        /* الإطار الرئيسي */
+        .main-panel {
+            border: 2px solid; 
+            border-color: #fff #808080 #808080 #fff; 
+            padding: 15px; 
+            background: #c0c0c0;
+            flex-grow: 1;
+        }
+
+        .panel-title {
+            background-color: #000080;
+            color: #fff;
+            padding: 4px 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid #fff;
+            font-size: 14px;
+        }
+
+        /* الجداول */
+        table { width: 100%; border-collapse: separate; border-spacing: 2px; }
+        th { 
+            background-color: #c0c0c0; 
+            border: 2px solid; 
+            border-color: #fff #808080 #808080 #fff; 
+            padding: 8px; 
+            font-weight: bold; 
+            text-align: center;
+        }
+        td { 
+            background-color: #c0c0c0; 
+            border: 1px solid #808080; 
+            padding: 5px; 
+            vertical-align: middle; 
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* مربعات الأرقام الغائرة (Value Boxes) */
+        .value-box { 
+            background-color: #eaeaea; 
+            border: 2px solid; 
+            border-color: #808080 #fff #fff #808080; 
+            padding: 2px 5px; 
+            text-align: right; 
+            display: inline-block; 
+            min-width: 50px; 
+            font-family: 'Courier New', Courier, monospace; 
+            font-weight: bold;
+            color: #000;
+            direction: ltr;
+        }
+
+        .unit { font-size: 10px; margin-right: 3px; color: #333; }
+
+        /* مؤشرات الحالة */
+        .motor-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; border-radius: 50%; border: 2px solid #000;
+            font-weight: bold; font-size: 10px; margin-left: 5px;
+        }
+        .bg-green { background-color: #00ff00; color: #000; }
+        .bg-red { background-color: #ff0000; color: #fff; }
+        .bg-yellow { background-color: #ffff00; color: #000; }
+
+        .company-logo {
+            border: 2px inset #fff; padding: 2px 10px; background: #e0e0e0;
+            font-weight: bold; text-align: center;
+        }
+
+        /* التوقيع السفلي */
+        .footer-signature {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 2px groove #fff;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+            background-color: #c0c0c0;
+            line-height: 1.6;
+        }
+
+        /* إخفاء الشاشات غير النشطة */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- الشريط العلوي الأخضر -->
+    <div class="top-status-bar">
+        <span id="datetime">03/06/2026   5:35:57 AM</span>
+        <div class="center-status">
+            P_AS05/@(4)/371AC10_1 &nbsp;&nbsp;&nbsp; DP Slave 3/11: OK<br>
+            <div class="dev-signature-top">RPA Developer / Moataz Hassaan</div>
+        </div>
+        <div class="company-logo">GOE PHASE II<br><span style="font-size:9px; font-weight:normal;">مجمع مصانع العريش للأسمنت</span></div>
+    </div>
+
+    <!-- أزرار التنقل -->
+    <div class="nav-tabs" id="tabsContainer"><div class="nav-tab active" onclick="switchTab(&#39;overview&#39;, this)">
+                <div class="tab-indicator" style="background:#ffff00;"></div> 📊 لوحة الإجماليات
+            </div><div class="nav-tab" onclick="switchTab(&#39;ls&#39;, this)">
+                    <div class="tab-indicator"></div> Limestone Crushing
+                </div><div class="nav-tab" onclick="switchTab(&#39;cl&#39;, this)">
+                    <div class="tab-indicator"></div> Clay and Shale
+                </div><div class="nav-tab" onclick="switchTab(&#39;rm&#39;, this)">
+                    <div class="tab-indicator"></div> Raw Mill
+                </div><div class="nav-tab" onclick="switchTab(&#39;kl&#39;, this)">
+                    <div class="tab-indicator"></div> Kiln Line
+                </div><div class="nav-tab" onclick="switchTab(&#39;cm1&#39;, this)">
+                    <div class="tab-indicator"></div> Cement Grinding 1
+                </div><div class="nav-tab" onclick="switchTab(&#39;cm2&#39;, this)">
+                    <div class="tab-indicator"></div> Cement Grinding 2
+                </div><div class="nav-tab" onclick="switchTab(&#39;pk&#39;, this)">
+                    <div class="tab-indicator"></div> Packing Plant
+                </div></div>
+
+    <!-- الإطار الرئيسي للبيانات -->
+    <div class="main-panel" id="mainContent">
+        <!-- شاشة الإجماليات (Overview) -->
+        <div id="view-overview" class="view-section active">
+            <div class="panel-title">📊 لوحة الإجماليات التشغيلية (Plant Overview)</div>
+            <table id="overviewTable">
+                <thead>
+                    <tr>
+                        <th>القسم / Section</th>
+                        <th>المعدة / Tag No.</th>
+                        <th>إجمالي الإنتاج (طن)</th>
+                        <th>ساعات التشغيل الفعلي</th>
+                        <th>عدد التوقفات</th>
+                        <th>إجمالي التوقف (دقيقة)</th>
+                    </tr>
+                </thead>
+                <tbody id="overviewBody">
+                    <tr>
+                        <td style="text-align: right;">كسارة الحجر الجيري <span style="color:#555;font-size:10px;">(Limestone Crushing)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">302IM04</td>
+                        <td><div class="value-box" style="width:70px;">30782.8</div><span class="unit">t</span></td>
+                        <td><div class="value-box">20.52</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">6</div></td>
+                        <td><div class="value-box" style="color: #ff0000">209</div><span class="unit">min</span></td>
+                    </tr>
+                
+                    <tr>
+                        <td style="text-align: right;">كسارة الطفلة <span style="color:#555;font-size:10px;">(Clay and Shale)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">303IM01</td>
+                        <td><div class="value-box" style="width:70px;">3633.1</div><span class="unit">t</span></td>
+                        <td><div class="value-box">20.13</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">6</div></td>
+                        <td><div class="value-box" style="color: #ff0000">232</div><span class="unit">min</span></td>
+                    </tr>
+                
+                    <tr>
+                        <td style="text-align: right;">طاحونة الخام <span style="color:#555;font-size:10px;">(Raw Mill)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">304RM01</td>
+                        <td><div class="value-box" style="width:70px;">9417.7</div><span class="unit">t</span></td>
+                        <td><div class="value-box">20.93</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">4</div></td>
+                        <td><div class="value-box" style="color: #ff0000">184</div><span class="unit">min</span></td>
+                    </tr>
+                
+                    <tr>
+                        <td style="text-align: right;">قسم الفرن <span style="color:#555;font-size:10px;">(Kiln Line)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">305KL01</td>
+                        <td><div class="value-box" style="width:70px;">8490.8</div><span class="unit">t</span></td>
+                        <td><div class="value-box">22.33</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">3</div></td>
+                        <td><div class="value-box" style="color: #ff0000">100</div><span class="unit">min</span></td>
+                    </tr>
+                
+                    <tr>
+                        <td style="text-align: right;">طواحين الأسمنت 1 <span style="color:#555;font-size:10px;">(Cement Grinding 1)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">306CM01</td>
+                        <td><div class="value-box" style="width:70px;">7309.5</div><span class="unit">t</span></td>
+                        <td><div class="value-box">22.80</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">2</div></td>
+                        <td><div class="value-box" style="color: #ff0000">72</div><span class="unit">min</span></td>
+                    </tr>
+                
+                    <tr>
+                        <td style="text-align: right;">طواحين الأسمنت 2 <span style="color:#555;font-size:10px;">(Cement Grinding 2)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">306CM02</td>
+                        <td><div class="value-box" style="width:70px;">6327.5</div><span class="unit">t</span></td>
+                        <td><div class="value-box">20.37</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">5</div></td>
+                        <td><div class="value-box" style="color: #ff0000">218</div><span class="unit">min</span></td>
+                    </tr>
+                
+                    <tr>
+                        <td style="text-align: right;">قسم التعبئة <span style="color:#555;font-size:10px;">(Packing Plant)</span></td>
+                        <td style="font-family: &#39;Courier New&#39;;">307PK01</td>
+                        <td><div class="value-box" style="width:70px;">5683.3</div><span class="unit">t</span></td>
+                        <td><div class="value-box">20.33</div><span class="unit">h</span></td>
+                        <td><div class="value-box" style="color: #ff0000">8</div></td>
+                        <td><div class="value-box" style="color: #ff0000">220</div><span class="unit">min</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- سيتم توليد شاشات التفاصيل (24 ساعة) للأقسام هنا -->
+    
+                <div id="view-ls" class="view-section">
+                    <div class="panel-title">Limestone Crushing | كسارة الحجر الجيري - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-ls">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1497.2</div></td>
+                            <td><div class="value-box">283.6</div></td>
+                            <td><div class="value-box">43.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1496.7</div></td>
+                            <td><div class="value-box">282.7</div></td>
+                            <td><div class="value-box">42.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1500.8</div></td>
+                            <td><div class="value-box">283.3</div></td>
+                            <td><div class="value-box">44.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1503.4</div></td>
+                            <td><div class="value-box">283.6</div></td>
+                            <td><div class="value-box">44.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">225.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">27.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">51</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">1100.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">27.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">16</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1505.0</div></td>
+                            <td><div class="value-box">282.7</div></td>
+                            <td><div class="value-box">45.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1497.2</div></td>
+                            <td><div class="value-box">283.6</div></td>
+                            <td><div class="value-box">41.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. الشريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">1100.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">27.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">16</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1498.2</div></td>
+                            <td><div class="value-box">283.8</div></td>
+                            <td><div class="value-box">42.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1498.1</div></td>
+                            <td><div class="value-box">283.8</div></td>
+                            <td><div class="value-box">43.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1496.4</div></td>
+                            <td><div class="value-box">283.6</div></td>
+                            <td><div class="value-box">41.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1501.8</div></td>
+                            <td><div class="value-box">282.3</div></td>
+                            <td><div class="value-box">41.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1502.3</div></td>
+                            <td><div class="value-box">283.3</div></td>
+                            <td><div class="value-box">43.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1503.0</div></td>
+                            <td><div class="value-box">282.4</div></td>
+                            <td><div class="value-box">43.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1500.3</div></td>
+                            <td><div class="value-box">282.9</div></td>
+                            <td><div class="value-box">43.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1504.1</div></td>
+                            <td><div class="value-box">283.7</div></td>
+                            <td><div class="value-box">42.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">875.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">27.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">25</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1502.9</div></td>
+                            <td><div class="value-box">283.2</div></td>
+                            <td><div class="value-box">43.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1499.6</div></td>
+                            <td><div class="value-box">282.4</div></td>
+                            <td><div class="value-box">42.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1503.0</div></td>
+                            <td><div class="value-box">282.7</div></td>
+                            <td><div class="value-box">45.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">100.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">27.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">56</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">375.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">27.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">45</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">1497.8</div></td>
+                            <td><div class="value-box">282.1</div></td>
+                            <td><div class="value-box">43.0</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                <div id="view-cl" class="view-section">
+                    <div class="panel-title">Clay and Shale | كسارة الطفلة - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-cl">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">45.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">24.3</div></td>
+                            <td><div class="value-box" style="color: #ff0000">45</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">183.6</div></td>
+                            <td><div class="value-box">179.7</div></td>
+                            <td><div class="value-box">42.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">183.8</div></td>
+                            <td><div class="value-box">180.0</div></td>
+                            <td><div class="value-box">37.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">182.8</div></td>
+                            <td><div class="value-box">180.0</div></td>
+                            <td><div class="value-box">41.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">181.4</div></td>
+                            <td><div class="value-box">179.7</div></td>
+                            <td><div class="value-box">38.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">12.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">24.3</div></td>
+                            <td><div class="value-box" style="color: #ff0000">56</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">183.8</div></td>
+                            <td><div class="value-box">180.5</div></td>
+                            <td><div class="value-box">39.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">178.1</div></td>
+                            <td><div class="value-box">179.9</div></td>
+                            <td><div class="value-box">40.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">مصطفى الحارون</td>
+                            <td style="font-size: 11px;">ك.العربي احمد عبدالنبي</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">105.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">24.3</div></td>
+                            <td><div class="value-box" style="color: #ff0000">25</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">178.7</div></td>
+                            <td><div class="value-box">180.6</div></td>
+                            <td><div class="value-box">41.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">176.0</div></td>
+                            <td><div class="value-box">179.6</div></td>
+                            <td><div class="value-box">37.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">179.5</div></td>
+                            <td><div class="value-box">180.6</div></td>
+                            <td><div class="value-box">41.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">108.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">24.3</div></td>
+                            <td><div class="value-box" style="color: #ff0000">24</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">179.4</div></td>
+                            <td><div class="value-box">181.3</div></td>
+                            <td><div class="value-box">41.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">184.2</div></td>
+                            <td><div class="value-box">181.2</div></td>
+                            <td><div class="value-box">38.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">177.7</div></td>
+                            <td><div class="value-box">180.3</div></td>
+                            <td><div class="value-box">37.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">محمد عيد عطية </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">180.0</div></td>
+                            <td><div class="value-box">180.6</div></td>
+                            <td><div class="value-box">37.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">181.4</div></td>
+                            <td><div class="value-box">181.3</div></td>
+                            <td><div class="value-box">38.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">182.5</div></td>
+                            <td><div class="value-box">180.8</div></td>
+                            <td><div class="value-box">39.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">178.5</div></td>
+                            <td><div class="value-box">180.7</div></td>
+                            <td><div class="value-box">41.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">15.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">24.3</div></td>
+                            <td><div class="value-box" style="color: #ff0000">55</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">180.0</div></td>
+                            <td><div class="value-box">181.0</div></td>
+                            <td><div class="value-box">41.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">177.7</div></td>
+                            <td><div class="value-box">181.2</div></td>
+                            <td><div class="value-box">38.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">99.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">24.3</div></td>
+                            <td><div class="value-box" style="color: #ff0000">27</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">محمد سلامه عبدالمجيد</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                <div id="view-rm" class="view-section">
+                    <div class="panel-title">Raw Mill | طاحونة الخام - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-rm">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">292.5</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">73.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">21</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">452.1</div></td>
+                            <td><div class="value-box">15.0</div></td>
+                            <td><div class="value-box">87.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">52.5</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">73.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">53</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">447.3</div></td>
+                            <td><div class="value-box">14.9</div></td>
+                            <td><div class="value-box">90.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">451.5</div></td>
+                            <td><div class="value-box">15.7</div></td>
+                            <td><div class="value-box">88.0</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">450.5</div></td>
+                            <td><div class="value-box">15.4</div></td>
+                            <td><div class="value-box">91.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">447.5</div></td>
+                            <td><div class="value-box">15.2</div></td>
+                            <td><div class="value-box">87.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">446.8</div></td>
+                            <td><div class="value-box">16.0</div></td>
+                            <td><div class="value-box">87.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">حسانين جمال حسن</td>
+                            <td style="font-size: 11px;">م. محمود يوسف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">447.1</div></td>
+                            <td><div class="value-box">15.4</div></td>
+                            <td><div class="value-box">87.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">30.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">73.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">56</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">454.0</div></td>
+                            <td><div class="value-box">16.2</div></td>
+                            <td><div class="value-box">88.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">445.2</div></td>
+                            <td><div class="value-box">15.1</div></td>
+                            <td><div class="value-box">88.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">450.6</div></td>
+                            <td><div class="value-box">14.3</div></td>
+                            <td><div class="value-box">87.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">454.5</div></td>
+                            <td><div class="value-box">16.2</div></td>
+                            <td><div class="value-box">91.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">449.6</div></td>
+                            <td><div class="value-box">14.9</div></td>
+                            <td><div class="value-box">90.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">451.0</div></td>
+                            <td><div class="value-box">16.0</div></td>
+                            <td><div class="value-box">90.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">أبوبكر محمود احمد</td>
+                            <td style="font-size: 11px;">م. زيزو </td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">446.3</div></td>
+                            <td><div class="value-box">15.0</div></td>
+                            <td><div class="value-box">89.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">451.6</div></td>
+                            <td><div class="value-box">14.6</div></td>
+                            <td><div class="value-box">89.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">45.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">73.9</div></td>
+                            <td><div class="value-box" style="color: #ff0000">54</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">449.5</div></td>
+                            <td><div class="value-box">15.3</div></td>
+                            <td><div class="value-box">89.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">454.7</div></td>
+                            <td><div class="value-box">16.1</div></td>
+                            <td><div class="value-box">90.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">452.7</div></td>
+                            <td><div class="value-box">15.0</div></td>
+                            <td><div class="value-box">87.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">446.9</div></td>
+                            <td><div class="value-box">15.6</div></td>
+                            <td><div class="value-box">88.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">448.3</div></td>
+                            <td><div class="value-box">14.8</div></td>
+                            <td><div class="value-box">88.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">اشرف ابراهيم رفاعي </td>
+                            <td style="font-size: 11px;">م. محمد أيمن</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                <div id="view-kl" class="view-section">
+                    <div class="panel-title">Kiln Line | قسم الفرن - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-kl">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">383.3</div></td>
+                            <td><div class="value-box">3.7</div></td>
+                            <td><div class="value-box">1351.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">381.2</div></td>
+                            <td><div class="value-box">2.7</div></td>
+                            <td><div class="value-box">1352.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">382.1</div></td>
+                            <td><div class="value-box">2.9</div></td>
+                            <td><div class="value-box">1349.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">380.9</div></td>
+                            <td><div class="value-box">4.5</div></td>
+                            <td><div class="value-box">1350.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">379.3</div></td>
+                            <td><div class="value-box">3.6</div></td>
+                            <td><div class="value-box">1349.0</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">376.7</div></td>
+                            <td><div class="value-box">3.7</div></td>
+                            <td><div class="value-box">1350.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">384.7</div></td>
+                            <td><div class="value-box">2.9</div></td>
+                            <td><div class="value-box">1350.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">380.6</div></td>
+                            <td><div class="value-box">4.4</div></td>
+                            <td><div class="value-box">1348.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">احمد طه عبدالعظيم</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">377.0</div></td>
+                            <td><div class="value-box">3.2</div></td>
+                            <td><div class="value-box">1350.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">375.4</div></td>
+                            <td><div class="value-box">3.7</div></td>
+                            <td><div class="value-box">1349.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">383.5</div></td>
+                            <td><div class="value-box">3.6</div></td>
+                            <td><div class="value-box">1348.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">158.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">1335.0</div></td>
+                            <td><div class="value-box" style="color: #ff0000">35</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">384.8</div></td>
+                            <td><div class="value-box">3.0</div></td>
+                            <td><div class="value-box">1350.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">44.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">1335.0</div></td>
+                            <td><div class="value-box" style="color: #ff0000">53</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">377.4</div></td>
+                            <td><div class="value-box">2.9</div></td>
+                            <td><div class="value-box">1349.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">384.5</div></td>
+                            <td><div class="value-box">3.4</div></td>
+                            <td><div class="value-box">1352.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">382.1</div></td>
+                            <td><div class="value-box">3.2</div></td>
+                            <td><div class="value-box">1349.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">376.4</div></td>
+                            <td><div class="value-box">3.0</div></td>
+                            <td><div class="value-box">1348.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">376.9</div></td>
+                            <td><div class="value-box">3.6</div></td>
+                            <td><div class="value-box">1349.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">381.3</div></td>
+                            <td><div class="value-box">4.1</div></td>
+                            <td><div class="value-box">1350.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">378.9</div></td>
+                            <td><div class="value-box">2.7</div></td>
+                            <td><div class="value-box">1351.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">380.2</div></td>
+                            <td><div class="value-box">3.6</div></td>
+                            <td><div class="value-box">1351.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">377.0</div></td>
+                            <td><div class="value-box">4.4</div></td>
+                            <td><div class="value-box">1350.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">304.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">1335.0</div></td>
+                            <td><div class="value-box" style="color: #ff0000">12</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                <div id="view-cm1" class="view-section">
+                    <div class="panel-title">Cement Grinding 1 | طواحين الأسمنت 1 - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-cm1">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">315.4</div></td>
+                            <td><div class="value-box">17.9</div></td>
+                            <td><div class="value-box">110.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">323.7</div></td>
+                            <td><div class="value-box">17.2</div></td>
+                            <td><div class="value-box">110.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">324.0</div></td>
+                            <td><div class="value-box">17.4</div></td>
+                            <td><div class="value-box">111.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">320.9</div></td>
+                            <td><div class="value-box">18.9</div></td>
+                            <td><div class="value-box">108.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">318.0</div></td>
+                            <td><div class="value-box">18.8</div></td>
+                            <td><div class="value-box">110.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">321.1</div></td>
+                            <td><div class="value-box">18.2</div></td>
+                            <td><div class="value-box">111.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">321.0</div></td>
+                            <td><div class="value-box">18.5</div></td>
+                            <td><div class="value-box">109.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">322.4</div></td>
+                            <td><div class="value-box">18.4</div></td>
+                            <td><div class="value-box">108.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">كورشي</td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">323.6</div></td>
+                            <td><div class="value-box">18.2</div></td>
+                            <td><div class="value-box">110.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">324.4</div></td>
+                            <td><div class="value-box">18.4</div></td>
+                            <td><div class="value-box">111.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">324.5</div></td>
+                            <td><div class="value-box">18.8</div></td>
+                            <td><div class="value-box">110.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">322.9</div></td>
+                            <td><div class="value-box">18.6</div></td>
+                            <td><div class="value-box">111.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">319.2</div></td>
+                            <td><div class="value-box">17.4</div></td>
+                            <td><div class="value-box">110.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">318.7</div></td>
+                            <td><div class="value-box">18.9</div></td>
+                            <td><div class="value-box">110.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">316.2</div></td>
+                            <td><div class="value-box">17.1</div></td>
+                            <td><div class="value-box">108.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">186.7</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">95.0</div></td>
+                            <td><div class="value-box" style="color: #ff0000">25</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">318.1</div></td>
+                            <td><div class="value-box">18.2</div></td>
+                            <td><div class="value-box">108.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">320.2</div></td>
+                            <td><div class="value-box">18.8</div></td>
+                            <td><div class="value-box">109.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">69.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">95.0</div></td>
+                            <td><div class="value-box" style="color: #ff0000">47</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">315.2</div></td>
+                            <td><div class="value-box">18.6</div></td>
+                            <td><div class="value-box">109.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">321.8</div></td>
+                            <td><div class="value-box">18.3</div></td>
+                            <td><div class="value-box">111.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">315.9</div></td>
+                            <td><div class="value-box">18.5</div></td>
+                            <td><div class="value-box">109.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">324.0</div></td>
+                            <td><div class="value-box">18.5</div></td>
+                            <td><div class="value-box">112.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">322.3</div></td>
+                            <td><div class="value-box">17.8</div></td>
+                            <td><div class="value-box">108.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">مصطفى رمضان</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                <div id="view-cm2" class="view-section">
+                    <div class="panel-title">Cement Grinding 2 | طواحين الأسمنت 2 - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-cm2">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">310.4</div></td>
+                            <td><div class="value-box">18.9</div></td>
+                            <td><div class="value-box">104.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">196.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">90.5</div></td>
+                            <td><div class="value-box" style="color: #ff0000">22</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">314.4</div></td>
+                            <td><div class="value-box">18.3</div></td>
+                            <td><div class="value-box">107.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">308.5</div></td>
+                            <td><div class="value-box">17.7</div></td>
+                            <td><div class="value-box">105.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">310.4</div></td>
+                            <td><div class="value-box">17.7</div></td>
+                            <td><div class="value-box">108.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">313.2</div></td>
+                            <td><div class="value-box">17.8</div></td>
+                            <td><div class="value-box">104.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">308.6</div></td>
+                            <td><div class="value-box">19.0</div></td>
+                            <td><div class="value-box">106.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">311.1</div></td>
+                            <td><div class="value-box">18.7</div></td>
+                            <td><div class="value-box">107.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمود عيد مصلح </td>
+                            <td style="font-size: 11px;">م. أحمد الديب</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">305.7</div></td>
+                            <td><div class="value-box">18.9</div></td>
+                            <td><div class="value-box">105.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">305.1</div></td>
+                            <td><div class="value-box">18.4</div></td>
+                            <td><div class="value-box">105.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">310.7</div></td>
+                            <td><div class="value-box">18.7</div></td>
+                            <td><div class="value-box">107.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">311.4</div></td>
+                            <td><div class="value-box">18.9</div></td>
+                            <td><div class="value-box">105.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">311.8</div></td>
+                            <td><div class="value-box">17.1</div></td>
+                            <td><div class="value-box">107.5</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">314.6</div></td>
+                            <td><div class="value-box">17.4</div></td>
+                            <td><div class="value-box">104.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">307.9</div></td>
+                            <td><div class="value-box">17.1</div></td>
+                            <td><div class="value-box">107.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">155.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">90.5</div></td>
+                            <td><div class="value-box" style="color: #ff0000">30</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">25.8</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">90.5</div></td>
+                            <td><div class="value-box" style="color: #ff0000">55</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">25.8</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">90.5</div></td>
+                            <td><div class="value-box" style="color: #ff0000">55</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">312.0</div></td>
+                            <td><div class="value-box">18.1</div></td>
+                            <td><div class="value-box">105.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">314.3</div></td>
+                            <td><div class="value-box">18.5</div></td>
+                            <td><div class="value-box">104.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">313.2</div></td>
+                            <td><div class="value-box">17.2</div></td>
+                            <td><div class="value-box">105.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">306.0</div></td>
+                            <td><div class="value-box">17.4</div></td>
+                            <td><div class="value-box">104.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">314.6</div></td>
+                            <td><div class="value-box">18.0</div></td>
+                            <td><div class="value-box">108.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">20.7</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">90.5</div></td>
+                            <td><div class="value-box" style="color: #ff0000">56</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">م. مهاب حسن</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+                <div id="view-pk" class="view-section">
+                    <div class="panel-title">Packing Plant | قسم التعبئة - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-pk">
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">00:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">233.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">10</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">01:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">278.3</div></td>
+                            <td><div class="value-box">70.1</div></td>
+                            <td><div class="value-box">47.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">02:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">284.5</div></td>
+                            <td><div class="value-box">69.7</div></td>
+                            <td><div class="value-box">47.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">03:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">281.8</div></td>
+                            <td><div class="value-box">70.2</div></td>
+                            <td><div class="value-box">43.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">04:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">177.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">22</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">05:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">277.4</div></td>
+                            <td><div class="value-box">70.4</div></td>
+                            <td><div class="value-box">44.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">06:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">275.6</div></td>
+                            <td><div class="value-box">70.6</div></td>
+                            <td><div class="value-box">47.2</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">07:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">282.9</div></td>
+                            <td><div class="value-box">69.1</div></td>
+                            <td><div class="value-box">47.6</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثالثة</td>
+                            <td style="font-size: 11px;">محمد صالح خناصر</td>
+                            <td style="font-size: 11px;">م. شريف أشرف</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">08:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">210.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">15</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">09:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">140.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">30</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">10:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">280.0</div></td>
+                            <td><div class="value-box">69.4</div></td>
+                            <td><div class="value-box">43.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">11:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">98.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">39</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">12:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">278.5</div></td>
+                            <td><div class="value-box">69.6</div></td>
+                            <td><div class="value-box">46.1</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">13:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">275.4</div></td>
+                            <td><div class="value-box">69.4</div></td>
+                            <td><div class="value-box">47.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">14:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">281.3</div></td>
+                            <td><div class="value-box">70.0</div></td>
+                            <td><div class="value-box">44.9</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">15:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">149.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">28</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الأولى</td>
+                            <td style="font-size: 11px;">المعتز باللة محمد حسان</td>
+                            <td style="font-size: 11px;">م. محمود بدران</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">16:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">281.0</div></td>
+                            <td><div class="value-box">70.4</div></td>
+                            <td><div class="value-box">44.8</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">17:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">277.9</div></td>
+                            <td><div class="value-box">70.9</div></td>
+                            <td><div class="value-box">44.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">18:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">281.8</div></td>
+                            <td><div class="value-box">70.9</div></td>
+                            <td><div class="value-box">46.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">19:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">276.9</div></td>
+                            <td><div class="value-box">69.9</div></td>
+                            <td><div class="value-box">45.4</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">20:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">278.3</div></td>
+                            <td><div class="value-box">69.0</div></td>
+                            <td><div class="value-box">43.3</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">21:00</td>
+                            <td><div class="motor-icon bg-green">M</div> RUN</td>
+                            <td><div class="value-box">278.5</div></td>
+                            <td><div class="value-box">70.2</div></td>
+                            <td><div class="value-box">44.7</div></td>
+                            <td><div class="value-box" style="color: #000">0</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">22:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">149.3</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">28</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    
+                        <tr>
+                            <td style="font-family: &#39;Courier New&#39;;">23:00</td>
+                            <td><div class="motor-icon bg-yellow">M</div> PRTL</td>
+                            <td><div class="value-box">56.0</div></td>
+                            <td><div class="value-box">0.0</div></td>
+                            <td><div class="value-box">30.2</div></td>
+                            <td><div class="value-box" style="color: #ff0000">48</div></td>
+                            <td style="font-size: 11px; color: #000080;">الوردية الثانية</td>
+                            <td style="font-size: 11px;">عمرو عرابى</td>
+                            <td style="font-size: 11px;">ك.سامح محمد رمضان</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div></div>
+
+    <!-- التوقيع السفلي للمهندس -->
+    <div class="footer-signature">
+        (فنى إنتاج \ المعتزباللة محمد حسان )<br>
+        <span style="font-size: 12px; color: #000080;">(فنى إنتاج و متخصص فى أتمتتة العمليات الريبوتية)</span>
+    </div>
+
+    <script>
+        // تحديث الوقت بالصيغة الموجودة في الصورة
+        function updateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB');
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: true });
+            document.getElementById('datetime').innerText = dateStr + "   " + timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // بيانات الأقسام الأساسية
+        const sectionsConfig = [
+            { id: "ls", name: "Limestone Crushing", arName: "كسارة الحجر الجيري", code: "302IM04", baseProd: 1500, baseRpm: 283.0, baseTemp: 42.9 },
+            { id: "cl", name: "Clay and Shale", arName: "كسارة الطفلة", code: "303IM01", baseProd: 180, baseRpm: 180.5, baseTemp: 39.3 },
+            { id: "rm", name: "Raw Mill", arName: "طاحونة الخام", code: "304RM01", baseProd: 450, baseRpm: 15.2, baseTemp: 88.9 },
+            { id: "kl", name: "Kiln Line", arName: "قسم الفرن", code: "305KL01", baseProd: 380, baseRpm: 3.5, baseTemp: 1350.0 },
+            { id: "cm1", name: "Cement Grinding 1", arName: "طواحين الأسمنت 1", code: "306CM01", baseProd: 320, baseRpm: 18.0, baseTemp: 110.0 },
+            { id: "cm2", name: "Cement Grinding 2", arName: "طواحين الأسمنت 2", code: "306CM02", baseProd: 310, baseRpm: 18.0, baseTemp: 105.5 },
+            { id: "pk", name: "Packing Plant", arName: "قسم التعبئة", code: "307PK01", baseProd: 280, baseRpm: 70.0, baseTemp: 45.2 }
+        ];
+
+        // بيانات الـ 24 ساعة لكل قسم
+        let simulationData = {};
+
+        // منطق تحديد الوردية والفنيين
+        function getShiftInfo(hour) {
+            if (hour >= 8 && hour < 16) {
+                return { shift: "الوردية الأولى", tech: "المعتز باللة محمد حسان", operator: "م. محمود بدران" };
+            } else if (hour >= 16 && hour <= 23) {
+                return { shift: "الوردية الثانية", tech: "عمرو عرابى", operator: "م. مهاب حسن" };
+            } else {
+                return { shift: "الوردية الثالثة", tech: "محمد صالح خناصر", operator: "م. أحمد الديب" };
+            }
+        }
+
+        // توليد بيانات 24 ساعة للمصنع بالكامل
+        function generate24HourData() {
+            sectionsConfig.forEach(sec => {
+                simulationData[sec.id] = { config: sec, hours: [], totals: { prod: 0, downtime: 0, stopCount: 0 } };
+                
+                for (let h = 0; h < 24; h++) {
+                    const timeStr = (h < 10 ? "0" + h : h) + ":00";
+                    const isRunning = Math.random() > 0.15; // 85% احتمال أن يكون شغال
+                    
+                    const stopMin = isRunning ? 0 : Math.floor(Math.random() * 50 + 10);
+                    // إذا كان متوقف جزء من الساعة، نحسب الإنتاج النسبي
+                    const runRatio = (60 - stopMin) / 60; 
+
+                    const prod = (sec.baseProd * runRatio + (isRunning ? (Math.random() * 10 - 5) : 0)).toFixed(1);
+                    const rpm = isRunning ? (sec.baseRpm + (Math.random() * 2 - 1)).toFixed(1) : "0.0";
+                    const temp = isRunning ? (sec.baseTemp + (Math.random() * 5 - 2)).toFixed(1) : (sec.baseTemp - 15).toFixed(1);
+                    const shiftInfo = getShiftInfo(h);
+
+                    simulationData[sec.id].hours.push({
+                        time: timeStr,
+                        isRunning: isRunning,
+                        stopMin: stopMin,
+                        prod: parseFloat(prod),
+                        rpm: rpm,
+                        temp: temp,
+                        shift: shiftInfo.shift,
+                        tech: shiftInfo.tech,
+                        operator: shiftInfo.operator
+                    });
+
+                    // حساب الإجماليات
+                    simulationData[sec.id].totals.prod += parseFloat(prod);
+                    simulationData[sec.id].totals.downtime += stopMin;
+                    if (stopMin > 0) simulationData[sec.id].totals.stopCount++;
+                }
+            });
+        }
+
+        // بناء الواجهة (الأزرار والشاشات)
+        function buildUI() {
+            const tabsContainer = document.getElementById('tabsContainer');
+            const mainContent = document.getElementById('mainContent');
+
+            // زر لوحة الإجماليات
+            let tabsHTML = `<div class="nav-tab active" onclick="switchTab('overview', this)">
+                <div class="tab-indicator" style="background:#ffff00;"></div> 📊 لوحة الإجماليات
+            </div>`;
+
+            sectionsConfig.forEach(sec => {
+                // إضافة زر لكل قسم
+                tabsHTML += `<div class="nav-tab" onclick="switchTab('${sec.id}', this)">
+                    <div class="tab-indicator"></div> ${sec.name}
+                </div>`;
+
+                // بناء جدول الـ 24 ساعة لكل قسم (مخفي افتراضياً)
+                const sectionHTML = `
+                <div id="view-${sec.id}" class="view-section">
+                    <div class="panel-title">${sec.name} | ${sec.arName} - سجل التشغيل (24 ساعة)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الوقت</th>
+                                <th>الحالة</th>
+                                <th>الإنتاج (t/h)</th>
+                                <th>السرعة (rpm)</th>
+                                <th>الحرارة (°C)</th>
+                                <th>التوقف (min)</th>
+                                <th>الوردية</th>
+                                <th>الفني المسؤول</th>
+                                <th>المهندس المشغل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-${sec.id}">
+                        </tbody>
+                    </table>
+                </div>`;
+                mainContent.innerHTML += sectionHTML;
+            });
+
+            tabsContainer.innerHTML = tabsHTML;
+        }
+
+        // ملء البيانات في الجداول
+        function populateTables() {
+            const overviewBody = document.getElementById('overviewBody');
+            overviewBody.innerHTML = '';
+
+            sectionsConfig.forEach(sec => {
+                const data = simulationData[sec.id];
+                const totals = data.totals;
+                const runHours = (24 - (totals.downtime / 60)).toFixed(2);
+
+                // ملء صف الإجماليات
+                overviewBody.innerHTML += `
+                    <tr>
+                        <td style="text-align: right;">${sec.arName} <span style="color:#555;font-size:10px;">(${sec.name})</span></td>
+                        <td style="font-family: 'Courier New';">${sec.code}</td>
+                        <td><div class='value-box' style="width:70px;">${totals.prod.toFixed(1)}</div><span class='unit'>t</span></td>
+                        <td><div class='value-box'>${runHours}</div><span class='unit'>h</span></td>
+                        <td><div class='value-box' style="color: ${totals.stopCount > 0 ? '#ff0000' : '#000'}">${totals.stopCount}</div></td>
+                        <td><div class='value-box' style="color: ${totals.downtime > 0 ? '#ff0000' : '#000'}">${totals.downtime}</div><span class='unit'>min</span></td>
+                    </tr>
+                `;
+
+                // ملء صفوف الـ 24 ساعة لهذا القسم
+                const detailBody = document.getElementById(`tbody-${sec.id}`);
+                detailBody.innerHTML = '';
+                
+                data.hours.forEach(hr => {
+                    let statusIcon = hr.isRunning 
+                        ? "<div class='motor-icon bg-green'>M</div> RUN" 
+                        : (hr.stopMin === 60 ? "<div class='motor-icon bg-red'>M</div> STOP" : "<div class='motor-icon bg-yellow'>M</div> PRTL");
+                    
+                    let stopColor = hr.stopMin > 0 ? '#ff0000' : '#000';
+
+                    detailBody.innerHTML += `
+                        <tr>
+                            <td style="font-family: 'Courier New';">${hr.time}</td>
+                            <td>${statusIcon}</td>
+                            <td><div class='value-box'>${hr.prod.toFixed(1)}</div></td>
+                            <td><div class='value-box'>${hr.rpm}</div></td>
+                            <td><div class='value-box'>${hr.temp}</div></td>
+                            <td><div class='value-box' style="color: ${stopColor}">${hr.stopMin}</div></td>
+                            <td style="font-size: 11px; color: #000080;">${hr.shift}</td>
+                            <td style="font-size: 11px;">${hr.tech}</td>
+                            <td style="font-size: 11px;">${hr.operator}</td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        // دالة التبديل بين التبويبات
+        function switchTab(tabId, element) {
+            // إزالة التفعيل من كل الأزرار
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            // إضافة التفعيل للزر المضغوط
+            element.classList.add('active');
+
+            // إخفاء كل الشاشات
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            // إظهار الشاشة المطلوبة
+            document.getElementById('view-' + tabId).classList.add('active');
+        }
+
+        // التهيئة عند تحميل الصفحة
+        generate24HourData();
+        buildUI();
+        populateTables();
+
+    </script>
+
+</body></html>
